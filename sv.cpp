@@ -1260,6 +1260,7 @@ void Xuat_Lop(list_LOP &listLOP){
 //*******Them vao dau danh sach sinh vien**************////////////
 int ThemDau_SV(PTRSV &listSV ,SINHVIEN sv){
 	PTRSV p =new NODE_SV;
+	sv.contro = NULL;
 	p->sv=sv;
 	p->next=listSV;
 	listSV=p;
