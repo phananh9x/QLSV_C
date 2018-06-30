@@ -7,6 +7,7 @@
 #include "mylib.h"
 #include <windows.h>
 
+
 using namespace std;
 const int KEY_ESC = 27;
 const int KEY_UP = 72;
@@ -36,7 +37,7 @@ char MENUCHUCNANGCHUDIEM[6][30]={":THOAT",":CAP NHAT DIEM",":XOA DIEM"};
 char MENUCHUCNANGTONGDIEM[6][30]={" ESC"," F1 "};
 char MENUCHUCNANGCHUTONGDIEM[6][30]={":THOAT",":XEM MON HOC"};
 using namespace std;
-const int MAXLIST = 300;
+const int MAXLIST = 50;
 
 struct DIEM
 {
@@ -93,8 +94,8 @@ struct LOP
 };
 struct list_LOP
 {
-	int n;
-	LOP lop[MAXLIST];	
+	int n = 0;
+	LOP *lop[MAXLIST];	
 };
 
 
@@ -1130,7 +1131,7 @@ void Timkiem_MH(PTRMONHOC &listMH,PTRMONHOC p){
 //			}
 //}
 //*******Them lop hoc***************//////////////
-int Them_Lop(list_LOP &listLOP,LOP lop,int n){
+int Them_Lop(list_LOP &listLOP,LOP *lop,int n){
 	if(n < 0 || n > listLOP.n+1 || listLOP.n ==MAXLIST) return 0;
 	listLOP.lop[n-1]=lop;
 	listLOP.n=n;
@@ -1139,14 +1140,14 @@ int Them_Lop(list_LOP &listLOP,LOP lop,int n){
 //*******Kiem tra ma lop hoc***************//////////////	
 int KiemTra_Lop(list_LOP &listLOP,CHAR * MALOP){
 	for(int i=0;i<listLOP.n;i++){
-		if(strcmp(listLOP.lop[i].MALOP,MALOP)==0){
+		if(strcmp(listLOP.lop[i]->MALOP,MALOP)==0){
 			return i;
 		}
 	}
 	return -1;
 }	
 //*******Sua lop hoc***************//////////////
-int Sua_LOP(list_LOP & listLOP,int vitri,LOP lop){
+int Sua_LOP(list_LOP & listLOP,int vitri,LOP *lop){
 	if(vitri!=-1){
 	    listLOP.lop[vitri]=lop;
 		return 1;
@@ -1157,7 +1158,7 @@ int Sua_LOP(list_LOP & listLOP,int vitri,LOP lop){
 //*******Xoa lop hoc***************//////////////
 int Xoa_LOP(list_LOP & listLOP,int vitri){
 	if(vitri!=-1){
-	 if(listLOP.lop[vitri].contro==NULL){
+	 if(listLOP.lop[vitri]->contro==NULL){
 	 	if(vitri<listLOP.n-1)
 		 {
 		   for(int i =vitri;i<listLOP.n-1;i++)
@@ -1180,61 +1181,78 @@ int Xoa_LOP(list_LOP & listLOP,int vitri){
 int Timkiem_LOP(list_LOP & listLOP,int vitri){
 	if(vitri!=-1){
 		gotoxy(15,43); cout<< 1;
-		gotoxy(21,43); cout<<listLOP.lop[vitri].MALOP ;
-		gotoxy(37,43); cout<<listLOP.lop[vitri].TENLOP ;
-		gotoxy(70,43); cout<<listLOP.lop[vitri].NIEMKHOA ;
+		gotoxy(21,43); cout<<listLOP.lop[vitri]->MALOP ;
+		gotoxy(37,43); cout<<listLOP.lop[vitri]->TENLOP ;
+		gotoxy(70,43); cout<<listLOP.lop[vitri]->NIEMKHOA ;
 	}
 }
 //*******Luu file mon hoc**************////////////
 
 int Luu_LOP(list_LOP &listLOP,char *tenfile){
 	fstream file;
-	file.open(tenfile,ios::out|ios::binary | ios::trunc );
+	file.open(tenfile,fstream::out|fstream::trunc);
 	if(!file) { cout<<"\nFile"<<tenfile<<" khong ton tai"; return 0; };
-	for(int i=0;i<listLOP.n;i++)
-		file.write((char *)(&listLOP.lop[i]),sizeof(LOP));
+	file<<listLOP.n<<endl;
+	for(int i=0;i<listLOP.n;i++) {
+		file<<listLOP.lop[i]->MALOP<<endl<<listLOP.lop[i]->NIEMKHOA<<endl<<listLOP.lop[i]->TENLOP<<endl;
+	}
+//		file.write((char *)(&listLOP.lop[i]),sizeof(LOP));
 	file.close();
 	return 1;
 	}
 //*******Doc file lop**************////////////
 
 void LayDS_LOP(list_LOP &listLOP,char *tenfile){
-	fstream file;
-	file.open(tenfile,ios::in|ios::binary);
-	if(file.fail()) { file.open(tenfile,ios::out|ios::binary); return; };
+//	fstream file;
+//	file.open(tenfile,fstream::in | fstream::out | fstream::app);
+//	if(file.fail()) { file.open(tenfile,ios::out|ios::binary); return; };
+std::ifstream file(tenfile);
 	if(!file){cout<<"\n Khong the mo file "<<tenfile; return;};
 	int i=0;
-	LOP lop;
-	while(file.peek()!=EOF){
-		file.read((char*)(&lop),sizeof(LOP));
-		lop.contro=NULL;
-		listLOP.lop[listLOP.n++]=lop;
+	file>>i;
+	std::string str = "phan mem";
+	while(i >0){
+		LOP *lop = new LOP;	
+		
+		file>>lop->MALOP;
+		file>>lop->NIEMKHOA;
+		std::getline(file, str);
+		std::getline(file, str);
+		strcpy(lop->TENLOP, str.c_str());
+		lop->contro=NULL;
+		listLOP.lop[listLOP.n++] =  lop;
+		lop = NULL;
+		delete lop;
+		i--;
 	}
-	file.close();	
+
+	
+
 	}
 
 //*******Nhap lop hoc***************//////////////
 void Nhap_Lop(list_LOP &listLOP){
-	LOP lop;
+	LOP *lop = new LOP;
 	int n =0;
-	 cout<<"\nNhap ma lop :";fflush(stdin); gets(lop.MALOP);
-	while(strcmp(lop.MALOP," ")!=0){
-	 if(KiemTra_Lop(listLOP,lop.MALOP)!=-1){
+	 cout<<"\nNhap ma lop :";fflush(stdin); gets(lop->MALOP);
+	while(strcmp(lop->MALOP," ")!=0){
+	 if(KiemTra_Lop(listLOP,lop->MALOP)!=-1){
 	 	cout<<"Ma lop bi trung !";
-	 	cout<<"\nNhap ma lop :";fflush(stdin); gets(lop.MALOP);
+	 	cout<<"\nNhap ma lop :";fflush(stdin); gets(lop->MALOP);
 	 	continue;
 	 }
-	 cout<<"Nhap ten lop :";fflush(stdin); gets(lop.TENLOP);
+	 cout<<"Nhap ten lop :";fflush(stdin); gets(lop->TENLOP);
 	 n++;
 	 Them_Lop(listLOP,lop,n);
-	 cout<<"Nhap ma lop ke:";fflush(stdin); gets(lop.MALOP);
+	 cout<<"Nhap ma lop ke:";fflush(stdin); gets(lop->MALOP);
 	}
+	delete lop;
 }
 //*******Xuat lop hoc***************//////////////
 void Xuat_Lop(list_LOP &listLOP){
     for(int i=0;i<listLOP.n;i++){
-    	cout<<"\nMa lop :"<<listLOP.lop[i].MALOP;
-		cout<<"\nTen lop :"<<listLOP.lop[i].TENLOP;
+    	cout<<"\nMa lop :"<<listLOP.lop[i]->MALOP;
+		cout<<"\nTen lop :"<<listLOP.lop[i]->TENLOP;
     	}
 }
 
@@ -1262,9 +1280,9 @@ void ThemCuoi_SV(PTRSV &listSV ,SINHVIEN sv){
 	q->next=p;
 }
 //*******Kiem tra ma sinh vien**************////////////
-PTRSV Kiemtra_SV(list_LOP listLOP ,char *MASV){
+PTRSV Kiemtra_SV(list_LOP &listLOP ,char *MASV){
 	for(int i=0;i<listLOP.n;i++){
-	for(PTRSV p =listLOP.lop[i].contro;p!=NULL;p=p->next){
+	for(PTRSV p =listLOP.lop[i]->contro;p!=NULL;p=p->next){
 		if(strcmp(p->sv.MASV,MASV)==0){
 			return p;
 		}
@@ -1273,9 +1291,9 @@ PTRSV Kiemtra_SV(list_LOP listLOP ,char *MASV){
 	return NULL;
 }
 //*******Tim vi tri sinh vien trong lop**************////////////
-int Timvitri_SV(list_LOP listLOP ,char *MASV){
+int Timvitri_SV(list_LOP &listLOP ,char *MASV){
 	for(int i=0;i<listLOP.n;i++){
-	for(PTRSV p =listLOP.lop[i].contro;p!=NULL;p=p->next){
+	for(PTRSV p =listLOP.lop[i]->contro;p!=NULL;p=p->next){
 		if(strcmp(p->sv.MASV,MASV)==0){
 			return i;
 		}
@@ -1284,9 +1302,9 @@ int Timvitri_SV(list_LOP listLOP ,char *MASV){
 	return -1;
 }
 //*******So sinh vien trong lop**************////////////
-int Dem_SV(list_LOP listLOP ,int vitri){
+int Dem_SV(list_LOP &listLOP ,int vitri){
 	int dem=0;
-	for(PTRSV p =listLOP.lop[vitri].contro;p!=NULL;p=p->next){
+	for(PTRSV p =listLOP.lop[vitri]->contro;p!=NULL;p=p->next){
 		dem++;
 	}
 	return dem;
@@ -1313,7 +1331,7 @@ int Sua_SV(list_LOP &listLOP ,char *MASV){
 	char c;
 	SINHVIEN sv;
 	if(vitri!=-1){
-	for(PTRSV p =listLOP.lop[vitri].contro ;p!=NULL;p=p->next)
+	for(PTRSV p =listLOP.lop[vitri]->contro ;p!=NULL;p=p->next)
 	{
 		if(strcmp(p->sv.MASV,MASV)==0)
 		{
@@ -1414,7 +1432,7 @@ int Xoa_SV(list_LOP &listLOP ,char *MASV){
 	int vitri=Timvitri_SV(listLOP,MASV);
 	if(vitri!=-1)
 	{
-	q=listLOP.lop[vitri].contro;
+	q=listLOP.lop[vitri]->contro;
 	while(q!=NULL&&strcmp(q->sv.MASV,MASV)!=0)
 	{
 		check++;
@@ -1426,7 +1444,7 @@ int Xoa_SV(list_LOP &listLOP ,char *MASV){
 	}
 	if(check == 0)
 	{
-	 listLOP.lop[vitri].contro =q->next;
+	 listLOP.lop[vitri]->contro =q->next;
 	 }
 	else
 	if(check > 0 && dem > 0)
@@ -1440,9 +1458,9 @@ int Xoa_SV(list_LOP &listLOP ,char *MASV){
 }
 //*******Xuat danh sach sinh vien**************////////////
 
-void Xuat_SV(list_LOP listLOP){
+void Xuat_SV(list_LOP &listLOP){
 	for(int i=0;i<listLOP.n;i++){
-	for(PTRSV p =listLOP.lop[i].contro;p!=NULL;p=p->next)
+	for(PTRSV p =listLOP.lop[i]->contro;p!=NULL;p=p->next)
 	{
 	    cout<<"\nMa sinh vien :"<<(p->sv.MASV);
 		cout<<"\nHo ten sinh vien :"<<(p->sv.HO)<<" "<<(p->sv.TEN);
@@ -1461,7 +1479,7 @@ int LuuDS_SV(list_LOP &listLOP,char *tenfile){
 	}
 	for(int i =0;i<listLOP.n;i++)
 	{
-	  for(PTRSV p =listLOP.lop[i].contro;p!=NULL;p=p->next)
+	  for(PTRSV p =listLOP.lop[i]->contro;p!=NULL;p=p->next)
 	  {
 		sv =p->sv;
 		sv.contro=NULL;
@@ -1483,18 +1501,18 @@ void LayDS_SV(list_LOP &listLOP,char *tenfile){
 	int n;
 	for ( int i = 0 ; i < listLOP.n  ; i++ )
 	{
-		listLOP.lop[i].contro = NULL;
+		listLOP.lop[i]->contro = NULL;
 	}
 	while(file.peek()!=EOF){	
 	    file.read((char*)(&n),sizeof(int));
 	    file.read((char*)(&sv),sizeof(SINHVIEN));
 	    sv.contro=NULL;
-	    ThemDau_SV(listLOP.lop[n].contro,sv);
+	    ThemDau_SV(listLOP.lop[n]->contro,sv);
 	}
 	file.close();
 }
 //*******Lay danh sach sinh vien tu file**************////////////
-void Nhap_SV(PTRSV &listSV,list_LOP listLOP){
+void Nhap_SV(PTRSV &listSV,list_LOP &listLOP){
 	SINHVIEN sv;
 	char kt[]=" ";
 	cout<<"\nNhap ma sinh vien :"; fflush(stdin); gets(sv.MASV);
@@ -1522,7 +1540,7 @@ void Sapxep_SV(list_LOP &listLOP,int vitri){
 	char tenmin[30];
     char ho[30];
     char ten[30];
-	for(PTRSV q=listLOP.lop[vitri].contro;q!=NULL;q=q->next)
+	for(PTRSV q=listLOP.lop[vitri]->contro;q!=NULL;q=q->next)
 	{
 		min =q->sv;
 		minp=q;
@@ -1687,7 +1705,7 @@ int Xoa_MH_DIEM(PTRDIEM listDIEM ,char *MAMH){
 }
 
 //*******Luu danh sach diem**************////////////
-int LuuDS_DIEM(list_LOP listLOP,char *tenfile){
+int LuuDS_DIEM(list_LOP &listLOP,char *tenfile){
 	fstream file;
 	DIEM diem;
 	SINHVIEN sv;
@@ -1698,7 +1716,7 @@ int LuuDS_DIEM(list_LOP listLOP,char *tenfile){
 	}
 	for(int i =0;i<listLOP.n;i++)
 	{
-	  for(PTRSV p =listLOP.lop[i].contro;p!=NULL;p=p->next)
+	  for(PTRSV p =listLOP.lop[i]->contro;p!=NULL;p=p->next)
 	  {
 		sv =p->sv;
 //		file.write((char*)(&sv),sizeof(SINHVIEN));
@@ -1717,7 +1735,7 @@ int LuuDS_DIEM(list_LOP listLOP,char *tenfile){
 	return 1;
 }
 //*******Lay danh sach diem sinh vien tu file**************////////////
-void LayDS_DIEM(list_LOP listLOP,char *tenfile){
+void LayDS_DIEM(list_LOP &listLOP,char *tenfile){
 	fstream file;
 	file.open(tenfile,ios::in|ios::binary);
 	if(file.fail()) { file.open(tenfile,ios::out|ios::binary); return; };
@@ -1727,7 +1745,7 @@ void LayDS_DIEM(list_LOP listLOP,char *tenfile){
 //	int n;
 for(int i =0;i<listLOP.n;i++)
 	{
-	  for(PTRSV p =listLOP.lop[i].contro;p!=NULL;p=p->next)
+	  for(PTRSV p =listLOP.lop[i]->contro;p!=NULL;p=p->next)
 	  {
 		p->sv.contro = NULL;
 	  }
@@ -1745,6 +1763,7 @@ for(int i =0;i<listLOP.n;i++)
 //*******Thao tac menu lop**************////////////
 void thaotacmenuLOP(list_LOP &listLOP)
 {
+
 	int tongtrang,trang=0;
 	int vitri=-1;
 	int vtmalop=0,vttenlop=0,vtnienkhoa=0;
@@ -1757,8 +1776,10 @@ void thaotacmenuLOP(list_LOP &listLOP)
 	LayDS_LOP(listLOP,tenfilelop);
 	LayDS_SV(listLOP,tenfilesv);
 	while(1)
+//	LOP *lop = new LOP;
 	{
 XUATDS:	
+	LOP *lop = new LOP;
     vtmalop=0,vttenlop=0,vtnienkhoa=0;
     setcolor(16,15);
     system("cls");
@@ -1783,9 +1804,9 @@ XUATDS:
 	for(int i=trang*15;i<15+15*trang&&i<listLOP.n;i++)
 	{
 		gotoxy(15, 9+dong); cout<< ( i +1 );
-		gotoxy(21,9+dong); cout<<listLOP.lop[i].MALOP ;
-		gotoxy(37,9+dong); cout<<listLOP.lop[i].TENLOP ;
-		gotoxy(70,9+dong); cout<<listLOP.lop[i].NIEMKHOA ;
+		gotoxy(21,9+dong); cout<<listLOP.lop[i]->MALOP ;
+		gotoxy(37,9+dong); cout<<listLOP.lop[i]->TENLOP ;
+		gotoxy(70,9+dong); cout<<listLOP.lop[i]->NIEMKHOA ;
 		dong++;
 	}
 	if(listLOP.n < 0)
@@ -1801,8 +1822,8 @@ XUATDS:
 	
 	switch(key)
 	{
+		
 		char malop[30],tenlop[40],nienkhoa[10];
-		LOP lop;
 		case KEY_DOWN:
 			if( tongtrang > 1  && trang + 1 < tongtrang )
 				{
@@ -1821,17 +1842,17 @@ XUATDS:
 			VeNutChucNang(0,MENUCHUCNANG,15,16);
 			NhapLop();
   NHAPMALOP:      
-		    c=HamNhapDuLieu2(24,6,vtmalop,10,lop.MALOP,0);
+		    c=HamNhapDuLieu2(24,6,vtmalop,10,lop->MALOP,0);
 	        if(c==KEY_ESC)
 			{
 	        	goto XUATDS;
 	        }
-	        while(strlen(lop.MALOP)==0&&(c==KEY_ENTER||c==KEY_DOWN))
+	        while(strlen(lop->MALOP)==0&&(c==KEY_ENTER||c==KEY_DOWN))
 			{
 	        	ThongBao((char *)"Ban Chua Nhap Ma Lop !!",16,28,25,40);
 	        	goto NHAPMALOP;
 	        }
-	        while(KiemTra_Lop(listLOP,lop.MALOP)!=-1)
+	        while(KiemTra_Lop(listLOP,lop->MALOP)!=-1)
 			{
 				ThongBao((char *)"Ma Lop Da Ton Tai !!",16,28,25,40);
 	        	goto NHAPMALOP;
@@ -1845,12 +1866,12 @@ XUATDS:
 				goto NHAPTENLOP;
 	        }
    NHAPTENLOP:	        
-	        c=HamNhapDuLieu2(24,9,vttenlop,30,lop.TENLOP,1);
+	        c=HamNhapDuLieu2(24,9,vttenlop,30,lop->TENLOP,1);
 	        if(c==KEY_ESC)
 			{
 	        	goto XUATDS;
 	        }
-	        while(strlen(lop.TENLOP)==0&&(c==KEY_ENTER))
+	        while(strlen(lop->TENLOP)==0&&(c==KEY_ENTER))
 			{
 	        	ThongBao((char *)"Ban Chua Nhap Ten Lop !!",16,28,25,40);
 	        	goto NHAPTENLOP;
@@ -1890,43 +1911,47 @@ XUATDS:
 			{
 				goto NHAPNIENKHOA;
 	        }
-	        lop.NIEMKHOA= atoi(nienkhoa);
+	        lop->NIEMKHOA= atoi(nienkhoa);
 	        if(Them_Lop(listLOP,lop,listLOP.n+1)==1)
 			{
+			
 	        	ThongBao((char *)"Them Lop Hoc Thanh cong !!",16,28,25,40);
 	        }
 			else
 			{
+				
 	        	ThongBao((char *)"Het Bo Nho Lop !!",16,28,25,40);	
 	        }
+	        lop= NULL;
+			delete lop;
 			break;
 		case KEY_F2:
 			VeNutChucNang(1,MENUCHUCNANG,15,16);
 			VeEditText(22,5,(char *)"            Nhap Ma Lop           ");
-			c=HamNhapDuLieu(24,6,10,lop.MALOP,0);
+			c=HamNhapDuLieu(24,6,10,lop->MALOP,0);
 	        if(c==KEY_ESC)
 			{
 	        	goto XUATDS;
 	        }
-	        while(strlen(lop.MALOP)==0&&c==KEY_ENTER)
+	        while(strlen(lop->MALOP)==0&&c==KEY_ENTER)
 			{
 	        	ThongBao((char *)"Ban Chua Nhap Ma Lop !!",16,28,25,40);
-	        	c=HamNhapDuLieu(24,6,10,lop.MALOP,0);
+	        	c=HamNhapDuLieu(24,6,10,lop->MALOP,0);
 	        }
-			vitri=KiemTra_Lop(listLOP,lop.MALOP);
+			vitri=KiemTra_Lop(listLOP,lop->MALOP);
 			if(vitri!=-1)
 			{
 				VeEditText(22,8,(char *)"            Nhap Ten Lop          ");
-				c=HamNhapDuLieu(24,9,30,lop.TENLOP,1);
+				c=HamNhapDuLieu(24,9,30,lop->TENLOP,1);
 			
 	        	if(c==KEY_ESC)
 				{
 	        		goto XUATDS;
 	       		}
-		        while(strlen(lop.TENLOP)==0&&c==KEY_ENTER)
+		        while(strlen(lop->TENLOP)==0&&c==KEY_ENTER)
 				{
 		        	ThongBao((char *)"Ban Chua Nhap Ten Lop !!",16,28,25,40);
-		        	c=HamNhapDuLieu(24,9,30,lop.TENLOP,1);
+		        	c=HamNhapDuLieu(24,9,30,lop->TENLOP,1);
 		        }
 		        VeEditText(22,11,(char *)"            Nhap Nien Khoa        ");
 		        c=nhap_so2(24,12,vtnienkhoa,nienkhoa);
@@ -1939,9 +1964,11 @@ XUATDS:
 		        	ThongBao((char *)"Ban Chua Nhap Nien Khoa !!",16,28,25,40);
 		        	c=nhap_so2(24,12,vtnienkhoa,nienkhoa);
 		        }
-		        lop.NIEMKHOA= atoi(nienkhoa);
+		        lop->NIEMKHOA= atoi(nienkhoa);
 			
 		        Sua_LOP(listLOP,vitri,lop);
+		        lop= NULL;
+				delete lop;
 		        ThongBao((char *)"Sua Thanh Cong Lop !!",16,28,25,40);
 			}
 			else
@@ -2021,6 +2048,7 @@ XUATDS:
 			}
 			break;
 		case KEY_ESC:
+			delete lop;
 			VeNutChucNang(5,MENUCHUCNANG,15,16);
 			int kq=HopThoaiYESNO((char *)"Ban co muon Luu Du Lieu Vao File ?",COKHONG,19,7,3,15,15,15);
 			if(kq==1) 
@@ -2042,7 +2070,7 @@ XUATDS:
   }	
 } 
 
-void HienThiGoiYLop(list_LOP listLOP ,int background,int textcolor,int x,int y){
+void HienThiGoiYLop(list_LOP &listLOP ,int background,int textcolor,int x,int y){
 	int tongtrang,trang=0;
 	char key;
     if(listLOP.n ==0)
@@ -2068,9 +2096,9 @@ XUAT:
 	for(int i=trang*15;i<15+15*trang&&i<listLOP.n;i++)
 	{
 		gotoxy(x+3,y+4+dong); cout<< ( i +1 );
-		gotoxy(x+9,y+4+dong); cout<<listLOP.lop[i].MALOP ;
-		gotoxy(x+23,y+4+dong); cout<<listLOP.lop[i].TENLOP ;
-		gotoxy(x+56,y+4+dong); cout<<listLOP.lop[i].NIEMKHOA ;
+		gotoxy(x+9,y+4+dong); cout<<listLOP.lop[i]->MALOP ;
+		gotoxy(x+23,y+4+dong); cout<<listLOP.lop[i]->TENLOP ;
+		gotoxy(x+56,y+4+dong); cout<<listLOP.lop[i]->NIEMKHOA ;
 		dong++;
 	}
 	HienThiTrang( tongtrang, trang , x+5 ,y+19 ,16,14 , 15);
@@ -2212,11 +2240,11 @@ XUATDS:
 	gotoxy(25,2);cout<<"      DANH SACH SINH VIEN     ";
 	gotoxy(25,3);cout<<"                              ";
 	setcolor(16,14);
-	gotoxy(3,5);  cout<<" LOP : "<<listLOP.lop[vitri].TENLOP ;
+	gotoxy(3,5);  cout<<" LOP : "<<listLOP.lop[vitri]->TENLOP ;
     int soluong=0;
 	SINHVIEN sv[MAXLIST];
 	Sapxep_SV(listLOP,vitri);
-	for(PTRSV p=listLOP.lop[vitri].contro;p!=NULL;p=p->next)
+	for(PTRSV p=listLOP.lop[vitri]->contro;p!=NULL;p=p->next)
 	{
 		sv[soluong]=p->sv; soluong++;
 	}
@@ -2244,7 +2272,7 @@ XUATDS:
 		gotoxy(76,10+dong); cout<<sv[i].SDT ;
 		dong++;
 	}
-	if(listLOP.lop[vitri].contro ==NULL)
+	if(listLOP.lop[vitri]->contro ==NULL)
 	{
 		ThongBao((char *)"Chua Sinh Vien Trong Lop Nay !",16,28,25,38);
 	}
@@ -2386,7 +2414,7 @@ XUATDS:
 				goto NHAPSDT;
 	        }
 	       
-	        if(ThemDau_SV(listLOP.lop[vitri].contro,sv))
+	        if(ThemDau_SV(listLOP.lop[vitri]->contro,sv))
 			{
 	        	ThongBao((char *)"Them Sinh Vien Thanh cong !!",16,28,25,38);
 	        }
@@ -2515,7 +2543,7 @@ XUATDS:
 }
 
 //*******Xuat danh sach mon hoc**************////////////	
-void thaotacmenuMH(PTRMONHOC &listMH,PTRDIEM &listDIEM, list_LOP listLOP){
+void thaotacmenuMH(PTRMONHOC &listMH,PTRDIEM &listDIEM, list_LOP &listLOP){
 	char tenfile[]="DIEM.txt";
 	char tenfile2[]="LOP.txt";
 	char tenfile3[]="MONHOC.txt";
@@ -2802,7 +2830,7 @@ NHAPSTCLTMH:
   }	
 }
 
-void HienThiGoiYSV(list_LOP listLOP ,int background,int textcolor,int x,int y){
+void HienThiGoiYSV(list_LOP &listLOP ,int background,int textcolor,int x,int y){
 	int tongtrang,trang=0,soluong=0;
 	SINHVIEN sv[MAXLIST];
 	char key;
@@ -2814,7 +2842,7 @@ void HienThiGoiYSV(list_LOP listLOP ,int background,int textcolor,int x,int y){
 	{
 	 for(int i=0;i<listLOP.n;i++)
 	 {
-	 	for(PTRSV p=listLOP.lop[i].contro;p!=NULL;p=p->next)
+	 	for(PTRSV p=listLOP.lop[i]->contro;p!=NULL;p=p->next)
 		{
 			sv[soluong]=p->sv; soluong++;
 	 	}
@@ -2964,7 +2992,7 @@ void NhapMaLOpDiem(int x,int y){
      }
 } 
 
-int CapNhatDanhSachDiem(PTRDIEM &listDIEM,char * MAMH,int soluong,char lan1[][4],char lan2[][4],SINHVIEN sv[],char *tenfile, list_LOP listLOP){
+int CapNhatDanhSachDiem(PTRDIEM &listDIEM,char * MAMH,int soluong,char lan1[][4],char lan2[][4],SINHVIEN sv[],char *tenfile, list_LOP &listLOP){
 	int check=0;
 	
 	for(int i=0;i< soluong;i++)
@@ -2978,7 +3006,7 @@ int CapNhatDanhSachDiem(PTRDIEM &listDIEM,char * MAMH,int soluong,char lan1[][4]
 		  diem1.LAN=1;
 		  diem1.DIEMSV=atof(lan1[i]);
 		  for(int j=0; j<listLOP.n; j++) {
-		  	for(PTRSV p = listLOP.lop[j].contro; p != NULL; p=p->next) {
+		  	for(PTRSV p = listLOP.lop[j]->contro; p != NULL; p=p->next) {
 		  		 for(PTRDIEM q = p->sv.contro;q!=NULL;q=q->next)
 				  {
 					if(strcmp(MAMH,q->diem.MAMH)==0&&q->diem.LAN==1)
@@ -3005,7 +3033,7 @@ int CapNhatDanhSachDiem(PTRDIEM &listDIEM,char * MAMH,int soluong,char lan1[][4]
 		  diem2.LAN=2;
 		  diem2.DIEMSV=atof(lan2[i]);
 		  for(int j=0; j<listLOP.n; j++) {
-		  	for(PTRSV p = listLOP.lop[j].contro; p != NULL; p=p->next) {
+		  	for(PTRSV p = listLOP.lop[j]->contro; p != NULL; p=p->next) {
 		  		 for(PTRDIEM q=p->sv.contro;q!=NULL;q=q->next)
 				  {
 					if(strcmp(MAMH,q->diem.MAMH)==0&&q->diem.LAN==2)
@@ -3291,7 +3319,7 @@ LAYDIEM:
 	int sluongSV=Dem_SV(listLOP,vitrilop);
 	SINHVIEN sv[sluongSV];
 	Sapxep_SV(listLOP,vitrilop);
-	for(PTRSV p=listLOP.lop[vitrilop].contro;p!=NULL;p=p->next)
+	for(PTRSV p=listLOP.lop[vitrilop]->contro;p!=NULL;p=p->next)
 	{
 		sv[soluong]=p->sv; soluong++;
 	 }
@@ -3312,7 +3340,7 @@ LAYDIEM:
 //		 {
 		   for(int i=0;i<listLOP.n;i++)
 		   {
-		   	for (PTRDIEM q =listLOP.lop[i].contro->sv.contro;q!=NULL;q=q->next ) {
+		   	for (PTRDIEM q =listLOP.lop[i]->contro->sv.contro;q!=NULL;q=q->next ) {
 		   		if(strcmp(mamh,q->diem.MAMH)==0&&q->diem.LAN==1)
 					{
 						if(q->diem.DIEMSV ==10)
@@ -3363,7 +3391,7 @@ XUATDS:
 	gotoxy(25,2);cout<<"        DANH SACH DIEM        ";
 	gotoxy(25,3);cout<<"                              ";
 	setcolor(16,14);
-	gotoxy(3,5);  cout<<" LOP : "<<listLOP.lop[vitrilop].TENLOP ;
+	gotoxy(3,5);  cout<<" LOP : "<<listLOP.lop[vitrilop]->TENLOP ;
 	gotoxy(3,6);  cout<<" MON HOC  : "<<listMH[vitrimh].TENMH ;
 	setcolor(16,15);
 	BangDiem(15,4,7);
@@ -3648,7 +3676,7 @@ NHAPMALOP:
 	int tongsotc[sluongSV];
 	Sapxep_SV(listLOP,vitri);
 	int reset=0;
-	for(PTRSV p=listLOP.lop[vitri].contro;p!=NULL;p=p->next)
+	for(PTRSV p=listLOP.lop[vitri]->contro;p!=NULL;p=p->next)
 	{
 		sv[soluong]=p->sv; soluong++;
 		diemMH[reset]=0;
@@ -3672,7 +3700,7 @@ NHAPMALOP:
 	
 	for(int i = 0; i < listLOP.n ; i++)
 		{
-		  	for (PTRDIEM p = listLOP.lop[i].contro->sv.contro; p !=NULL;p=p->next) {
+		  	for (PTRDIEM p = listLOP.lop[i]->contro->sv.contro; p !=NULL;p=p->next) {
 		  		char diem[4];
 				vitriMH =SearchMaMH(listMH, p->diem.MAMH,tongMH);
 				if(vitriMH !=-1)
@@ -3729,7 +3757,7 @@ XUATDS :
 	 gotoxy(20,2);cout<<"        TONG KET DIEM SINH VIEN        ";
 	 gotoxy(20,3);cout<<"                                       ";
 	 setcolor(16,14);
-	 gotoxy(3,6);  cout<<" LOP : "<<listLOP.lop[vitri].TENLOP ;
+	 gotoxy(3,6);  cout<<" LOP : "<<listLOP.lop[vitri]->TENLOP ;
 	 setcolor(16,15);
 	 BangDiemTongKet(15,2,7);
 	 vitriMH = 3 * trangMH ;
