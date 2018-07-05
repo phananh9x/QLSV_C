@@ -1324,6 +1324,19 @@ void TimKiem_SV(list_LOP &listLOP ,char *MASV){
     	gotoxy(76,43); cout<<p->sv.SDT ;
 	}
 }
+
+PTRSV SearchMaSV(list_LOP &listLOP, char *masv)
+{
+	PTRSV p;
+	for (int i = 0; i < listLOP.n; i++)
+	{
+		for (p = listLOP.lop[i]->contro; p != NULL; p = p->next)
+		{
+			if (_stricmp(p->sv.MASV, masv) == 0) return p;
+		}
+	}
+	return NULL;
+}
 //*******Sua sinh vien**************////////////
 
 int Sua_SV(list_LOP &listLOP ,char *MASV){
@@ -1704,60 +1717,112 @@ int Xoa_MH_DIEM(PTRDIEM listDIEM ,char *MAMH){
 	}
 	return dem;
 }
+int TongMonHocmotSV(PTRDIEM p)
+{
+	int tongso = 0;
+	for (PTRDIEM First = p; First != NULL; First = First->next)
+	{
+		tongso++;
+	}
+	return tongso;
+}
 
 //*******Luu danh sach diem**************////////////
 int LuuDS_DIEM(list_LOP &listLOP,char *tenfile){
 	fstream file;
 	DIEM diem;
 	SINHVIEN sv;
-	file.open(tenfile,ios::out|ios::binary|ios::trunc);
+	file.open(tenfile,fstream::out|fstream::trunc);
 	if(!file) 
 	{
 	   return 0;
 	}
+//	for(int i =0;i<listLOP.n;i++)
+//	{
+//	  for(PTRSV p =listLOP.lop[i]->contro;p!=NULL;p=p->next)
+//	  {
+//		sv =p->sv;
+//		file.write((char*)(&sv),sizeof(SINHVIEN));
+//		cout<<(char*)(&i);
+//		for(PTRDIEM q =p->sv.contro;q!=NULL;q=q->next)
+//		{
+//			file.write((char*)(&sv),sizeof(SINHVIEN));
+//			diem =q->diem;
+//			file.write((char*)(&diem),sizeof(DIEM));
+//		}
+//	  }
+//	}
+
 	for(int i =0;i<listLOP.n;i++)
 	{
 	  for(PTRSV p =listLOP.lop[i]->contro;p!=NULL;p=p->next)
 	  {
-		sv =p->sv;
-//		file.write((char*)(&sv),sizeof(SINHVIEN));
-//		cout<<(char*)(&i);
-		for(PTRDIEM q =p->sv.contro;q!=NULL;q=q->next)
+		int somh = TongMonHocmotSV(p->sv.contro);
+//		file.write((char *)&somh, sizeof(int));
+		file<<somh<<endl;
+		if (somh > 0)
 		{
-			file.write((char*)(&sv),sizeof(SINHVIEN));
-			diem =q->diem;
-			file.write((char*)(&diem),sizeof(DIEM));
+			for (PTRDIEM q = p->sv.contro; q != NULL; q = q->next)
+			{
+//				file.write((char *)&q->diem, sizeof(DIEM));
+				file<<q->diem.LAN<<endl<<q->diem.DIEMSV<<endl<<q->diem.MAMH<<endl;
+				
+			}
 		}
 	  }
 	}
-	
+	file<<'\0';
 
 	file.close();
 	return 1;
 }
+
 //*******Lay danh sach diem sinh vien tu file**************////////////
 void LayDS_DIEM(list_LOP &listLOP,char *tenfile){
 	fstream file;
 	file.open(tenfile,ios::in|ios::binary);
 	if(file.fail()) { file.open(tenfile,ios::out|ios::binary); return; };
 	if(!file){cout<<"\n Khong the mo file "<<tenfile; return;};
-	DIEM diem;
-	SINHVIEN sv;
-//	int n;
-for(int i =0;i<listLOP.n;i++)
-	{
-	  for(PTRSV p =listLOP.lop[i]->contro;p!=NULL;p=p->next)
-	  {
-		p->sv.contro = NULL;
-	  }
-	}
 	
-	while(file.peek()!=EOF)
-	{
-		file.read((char*)(&sv),sizeof(SINHVIEN));
-	    file.read((char*)(&diem),sizeof(DIEM));
-	    ThemDau_DIEM(sv.contro,diem);
+	SINHVIEN sv;
+	int siso, somh;
+//	int n;
+while(!file.eof())
+		{
+for (int i = 0; i < listLOP.n; i++)
+{
+		
+	 for(PTRSV p =listLOP.lop[i]->contro;p!=NULL;p=p->next)
+	  {
+	  		
+		
+			p->sv.contro = NULL;
+			file>>somh;
+	//		file.read((char *)&somh, sizeof(int));
+			if (somh > 0)
+			{
+				for (int k = 0; k < somh; k++)
+				{
+				DIEM diem;
+				file>>diem.LAN>>diem.DIEMSV>>diem.MAMH;
+	//				file.read((char *)&diem, sizeof(DIEM));
+					ThemDau_DIEM(p->sv.contro, diem);
+					
+					
+				}
+			}
+		}
 	}
+}
+//	
+//	while(file.peek()!=EOF)
+//	{
+//		file.read((char*)(&sv),sizeof(SINHVIEN));
+//	    file.read((char*)(&diem),sizeof(DIEM));
+//	    ThemDau_DIEM(sv.contro,diem);	
+//	    
+//	}
+	
 	file.close();
 }
 
@@ -2995,11 +3060,13 @@ void NhapMaLOpDiem(int x,int y){
 
 int CapNhatDanhSachDiem(PTRDIEM &listDIEM,char * MAMH,int soluong,char lan1[][4],char lan2[][4],SINHVIEN sv[],char *tenfile, list_LOP &listLOP){
 	int check=0;
+	int demLan1 = 0, demLan2 =0;
 	
 	for(int i=0;i< soluong;i++)
 	{
 		check=0;
 		DIEM diem1,diem2;
+	
 		if(lan1[i][0]!='\0')
 		{
 //		  strcpy(diem1.MASV,sv[i].MASV);
@@ -3007,18 +3074,23 @@ int CapNhatDanhSachDiem(PTRDIEM &listDIEM,char * MAMH,int soluong,char lan1[][4]
 		  diem1.LAN=1;
 		  diem1.DIEMSV=atof(lan1[i]);
 		  for(int j=0; j<listLOP.n; j++) {
+		  	demLan1 = 0;
 		  	for(PTRSV p = listLOP.lop[j]->contro; p != NULL; p=p->next) {
+		  		
 		  		 for(PTRDIEM q = p->sv.contro;q!=NULL;q=q->next)
 				  {
-					if(strcmp(MAMH,q->diem.MAMH)==0&&q->diem.LAN==1)
+					if(strcmp(MAMH,q->diem.MAMH)==0&&q->diem.LAN==1 && demLan1 == i)
 					{
 						q->diem.DIEMSV=diem1.DIEMSV;
 						check=1;
 					}
+					
 				  }
-				  if(check==0){
-				  	ThemDau_DIEM(p->sv.contro,diem1);
-				  }
+				if(check==0 && demLan1 == i){
+					ThemDau_DIEM(p->sv.contro,diem1);
+				}
+				demLan1 ++;
+				
 			  }
 		  }
 //		 
@@ -3026,7 +3098,7 @@ int CapNhatDanhSachDiem(PTRDIEM &listDIEM,char * MAMH,int soluong,char lan1[][4]
 //		  	ThemDau_DIEM(listDIEM,diem1);
 //		  }
 	   }
-	   check=0;
+	   check =0;
 	   if(lan2[i][0]!='\0')
 		{
 //		  strcpy(diem2.MASV,sv[i].MASV);
@@ -3034,18 +3106,23 @@ int CapNhatDanhSachDiem(PTRDIEM &listDIEM,char * MAMH,int soluong,char lan1[][4]
 		  diem2.LAN=2;
 		  diem2.DIEMSV=atof(lan2[i]);
 		  for(int j=0; j<listLOP.n; j++) {
+		  	demLan2 = 0;
 		  	for(PTRSV p = listLOP.lop[j]->contro; p != NULL; p=p->next) {
 		  		 for(PTRDIEM q=p->sv.contro;q!=NULL;q=q->next)
 				  {
-					if(strcmp(MAMH,q->diem.MAMH)==0&&q->diem.LAN==2)
+					if(strcmp(MAMH,q->diem.MAMH)==0&&q->diem.LAN==2 && demLan2 ==i)
 					{
 						q->diem.DIEMSV=diem2.DIEMSV;
 						check=1;
 					}
+					
 				  }
-				  if(check==0){
-				  	ThemDau_DIEM(p->sv.contro,diem2);
-				  }
+				  
+				  
+				if(check==0 && demLan2 == i){
+					ThemDau_DIEM(p->sv.contro,diem2);
+				}
+				demLan2++;
 			  }
 		  }
 //		  if(check==0){
