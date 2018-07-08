@@ -1203,11 +1203,11 @@ int Luu_LOP(list_LOP &listLOP,char *tenfile){
 //*******Doc file lop**************////////////
 
 void LayDS_LOP(list_LOP &listLOP,char *tenfile){
-//	fstream file;
-//	file.open(tenfile,fstream::in | fstream::out | fstream::app);
-//	if(file.fail()) { file.open(tenfile,ios::out|ios::binary); return; };
-std::ifstream file(tenfile);
-	if(!file){cout<<"\n Khong the mo file "<<tenfile; return;};
+	fstream file;
+	file.open(tenfile,fstream::in | fstream::out | fstream::app);
+	if(file.fail()) { file.open(tenfile,ios::out|ios::binary); return; };
+//std::ifstream file(tenfile);
+//	if(!file){cout<<"\n Khong the mo file "<<tenfile; return;};
 	int i=0;
 	file>>i;
 	std::string str = "phan mem";
@@ -1497,7 +1497,7 @@ int LuuDS_SV(list_LOP &listLOP,char *tenfile){
 	  {
 		sv =p->sv;
 		sv.contro=NULL;
-		cout<<(char*)(&i);
+//		cout<<(char*)(&i);
 		file.write((char*)(&i),sizeof(int));
 		file.write((char*)(&sv),sizeof(SINHVIEN));
 	  }
@@ -1509,7 +1509,7 @@ int LuuDS_SV(list_LOP &listLOP,char *tenfile){
 void LayDS_SV(list_LOP &listLOP,char *tenfile){
 	fstream file;
 	file.open(tenfile,ios::in|ios::binary);
-	if(file.fail()) { file.open(tenfile,ios::out|ios::binary); return; };
+//	if(file.fail()) { file.open(tenfile,ios::out|ios::binary); return; };
 	if(!file){cout<<"\n Khong the mo file "<<tenfile; return;};
 	SINHVIEN sv;
 	int n;
@@ -1759,9 +1759,10 @@ int LuuDS_DIEM(list_LOP &listLOP,char *tenfile){
 	  {
 		int somh = TongMonHocmotSV(p->sv.contro);
 //		file.write((char *)&somh, sizeof(int));
-		file<<somh<<endl;
+			
 		if (somh > 0)
 		{
+			file<<somh<<endl;
 			for (PTRDIEM q = p->sv.contro; q != NULL; q = q->next)
 			{
 //				file.write((char *)&q->diem, sizeof(DIEM));
@@ -1781,13 +1782,13 @@ int LuuDS_DIEM(list_LOP &listLOP,char *tenfile){
 void LayDS_DIEM(list_LOP &listLOP,char *tenfile){
 	fstream file;
 	file.open(tenfile,ios::in|ios::binary);
-	if(file.fail()) { file.open(tenfile,ios::out|ios::binary); return; };
+//	if(file.fail()) { file.open(tenfile,ios::out|ios::binary); return; };
 	if(!file){cout<<"\n Khong the mo file "<<tenfile; return;};
 	
 	SINHVIEN sv;
 	int siso, somh;
 //	int n;
-while(!file.eof())
+while(file.peek()!=EOF )
 		{
 for (int i = 0; i < listLOP.n; i++)
 {
@@ -1795,12 +1796,13 @@ for (int i = 0; i < listLOP.n; i++)
 	 for(PTRSV p =listLOP.lop[i]->contro;p!=NULL;p=p->next)
 	  {
 	  		
+			file>>somh;		
+			
 		
-			p->sv.contro = NULL;
-			file>>somh;
 	//		file.read((char *)&somh, sizeof(int));
 			if (somh > 0)
 			{
+				p->sv.contro = NULL;
 				for (int k = 0; k < somh; k++)
 				{
 				DIEM diem;
@@ -2238,13 +2240,13 @@ void thaotacmenuSV(list_LOP &listLOP,PTRDIEM &listDIEM)
 	int stclt,stcth;
 	char COKHONG[][10]={"CO","KHONG"};
 	char key,c;
-	char tenfile[]="DIEM.txt";
-	LayDS_DIEM(listLOP,tenfile);
 	char tenfilelop[]="LOP.txt";
 	char tenfilesv[]="SINHVIEN.txt";
 	listLOP.n=0;
 	LayDS_LOP(listLOP,tenfilelop);
 	LayDS_SV(listLOP,tenfilesv);
+//	char tenfile[]="DIEM.txt";
+//	LayDS_DIEM(listLOP,tenfile);
 	
 	setcolor(28,15);
     gotoxy(25,1);cout<<"                              ";
@@ -2593,7 +2595,7 @@ XUATDS:
 			{
 				if(LuuDS_SV(listLOP,tenfilesv)==1)
 				{
-					LuuDS_DIEM(listLOP,tenfile);
+//					LuuDS_DIEM(listLOP,tenfile);
 					ThongBao((char *)"Luu File Thanh Cong !!",16,28,25,38);	
 				}
 				else
@@ -3431,7 +3433,7 @@ LAYDIEM:
 						}
 						
 				        strcpy(diemlan1[i],sothuc);
-				        break;
+//				        break;
 				    }
 			   	  	if(strcmp(mamh,q->diem.MAMH)==0&&q->diem.LAN==2)
 					{
@@ -3446,7 +3448,7 @@ LAYDIEM:
 						}
 						
 				        strcpy(diemlan2[i],sothuc);
-				        break;
+//				        break;
 			   	  	}
 			   }
 	   	   }
