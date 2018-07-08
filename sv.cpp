@@ -3420,38 +3420,41 @@ LAYDIEM:
 //		 {
 		   for(int i=0;i<listLOP.n;i++)
 		   {
-		   	for (PTRDIEM q =listLOP.lop[i]->contro->sv.contro;q!=NULL;q=q->next ) {
-		   		if(strcmp(mamh,q->diem.MAMH)==0&&q->diem.LAN==1)
-					{
-						if(q->diem.DIEMSV ==10)
-						{
-							snprintf(sothuc, sizeof(sothuc), "%d", (int)(q->diem.DIEMSV));
-						}
-						else
-						{
-						    snprintf(sothuc, sizeof(sothuc), "%0.2f", q->diem.DIEMSV);
-						}
-						
-				        strcpy(diemlan1[i],sothuc);
-//				        break;
-				    }
-			   	  	if(strcmp(mamh,q->diem.MAMH)==0&&q->diem.LAN==2)
-					{
-						if(q->diem.DIEMSV ==10)
-						{
-							snprintf(sothuc, sizeof(sothuc), "%d", (int)(q->diem.DIEMSV));
-						}
-						else
-						{
-							
-						    snprintf(sothuc, sizeof(sothuc), "%0.2f", q->diem.DIEMSV);
-						}
-						
-				        strcpy(diemlan2[i],sothuc);
-//				        break;
-			   	  	}
-			   }
-	   	   }
+		   		for (PTRSV p = listLOP.lop[i]->contro; p !=NULL; ) { 
+			   			for (PTRDIEM q =p->sv.contro;q!=NULL;q=q->next ) {
+					   		if(strcmp(mamh,q->diem.MAMH)==0&&q->diem.LAN==1)
+								{
+									if(q->diem.DIEMSV ==10)
+									{
+										snprintf(sothuc, sizeof(sothuc), "%d", (int)(q->diem.DIEMSV));
+									}
+									else
+									{
+									    snprintf(sothuc, sizeof(sothuc), "%0.2f", q->diem.DIEMSV);
+									}
+									
+							        strcpy(diemlan1[i],sothuc);
+			//				        break;
+							    }
+						   	  	if(strcmp(mamh,q->diem.MAMH)==0&&q->diem.LAN==2)
+								{
+									if(q->diem.DIEMSV ==10)
+									{
+										snprintf(sothuc, sizeof(sothuc), "%d", (int)(q->diem.DIEMSV));
+									}
+									else
+									{
+										
+									    snprintf(sothuc, sizeof(sothuc), "%0.2f", q->diem.DIEMSV);
+									}
+									
+							        strcpy(diemlan2[i],sothuc);
+			//				        break;
+						   	  	}
+				   			}
+				   			 p= p->next;
+		   			}
+			}
 //	   	  }
 	if(soluong < 15)
 	{
