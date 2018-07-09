@@ -3398,7 +3398,7 @@ LAYDIEM:
 	int soluong=0;
 	int sluongSV=Dem_SV(listLOP,vitrilop);
 	SINHVIEN sv[sluongSV];
-	Sapxep_SV(listLOP,vitrilop);
+//	Sapxep_SV(listLOP,vitrilop);
 	for(PTRSV p=listLOP.lop[vitrilop]->contro;p!=NULL;p=p->next)
 	{
 		sv[soluong]=p->sv; soluong++;
@@ -3420,6 +3420,7 @@ LAYDIEM:
 //		 {
 		   for(int i=0;i<listLOP.n;i++)
 		   {
+		   		int j = 0;
 		   		for (PTRSV p = listLOP.lop[i]->contro; p !=NULL; ) { 
 			   			for (PTRDIEM q =p->sv.contro;q!=NULL;q=q->next ) {
 					   		if(strcmp(mamh,q->diem.MAMH)==0&&q->diem.LAN==1)
@@ -3433,7 +3434,7 @@ LAYDIEM:
 									    snprintf(sothuc, sizeof(sothuc), "%0.2f", q->diem.DIEMSV);
 									}
 									
-							        strcpy(diemlan1[i],sothuc);
+							        strcpy(diemlan1[j],sothuc);
 			//				        break;
 							    }
 						   	  	if(strcmp(mamh,q->diem.MAMH)==0&&q->diem.LAN==2)
@@ -3448,11 +3449,12 @@ LAYDIEM:
 									    snprintf(sothuc, sizeof(sothuc), "%0.2f", q->diem.DIEMSV);
 									}
 									
-							        strcpy(diemlan2[i],sothuc);
+							        strcpy(diemlan2[j],sothuc);
 			//				        break;
 						   	  	}
 				   			}
 				   			 p= p->next;
+				   			 j++;
 		   			}
 			}
 //	   	  }
