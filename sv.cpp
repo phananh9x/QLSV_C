@@ -495,13 +495,21 @@ char HamNhapDuLieu2(int x,int y,int &i,int dodai,char *num,int isnhap){
    return getnum;
 }
 
-char HamNhapDiem(int x,int y,int  &i,int dodai,char *num){
+char HamNhapDiem(int x,int y,int  i,int dodai,char *num){
 	char getnum;
     setcolor(16,15);
     gotoxy(x,y);
     if(i > 0)
 	{
-      cout<<num;
+		if (strcmp(num, "10") == 0) {
+			cout<<num;
+		i =2;
+		}else {
+			float fr=atof(num);
+			printf("%0.1f",fr);
+			i =3;
+		}
+		
     }
     while((getnum=getch())!=KEY_ENTER&&getnum!=KEY_ESC)
     {
@@ -3416,6 +3424,7 @@ LAYDIEM:
 			}
 		}
 	char sothuc[4];
+//	char buffer[64];
 //	for(PTRDIEM q =listDIEM;q!=NULL;q=q->next)
 //		 {
 		   for(int i=0;i<listLOP.n;i++)
@@ -3433,6 +3442,7 @@ LAYDIEM:
 									{
 									    snprintf(sothuc, sizeof(sothuc), "%0.2f", q->diem.DIEMSV);
 									}
+									
 									
 							        strcpy(diemlan1[j],sothuc);
 			//				        break;
@@ -3491,13 +3501,28 @@ XUATDS:
 		gotoxy(11,11+dong); cout<<sv[i].MASV;
 		gotoxy(24,11+dong); cout<<sv[i].HO;
 		gotoxy(39,11+dong); cout<<sv[i].TEN;
+	
+		
+		
 		if ( diemlan1[i][0]  != '\0')
 		{
-			gotoxy(56,11+dong);  cout<<diemlan1[i];
+			gotoxy(56,11+dong);
+			if (strcmp(diemlan1[i], "10")==0) {
+				cout<<diemlan1[i];
+			}else {			
+				float fr=atof(diemlan1[i]);
+			  	printf("%0.1f",fr);
+			}
 		}
 		if ( diemlan2[i][0]  != '\0')
 		{
-			gotoxy(68,11+dong);  cout<<diemlan2[i];
+			gotoxy(68,11+dong);  
+			if (strcmp(diemlan2[i], "10")==0) {
+				cout<<diemlan2[i];
+			}else {			
+				float fr=atof(diemlan2[i]);
+				printf("%0.1f",fr);
+			}
 		}
 		dong++;
 	} 
