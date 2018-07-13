@@ -1670,9 +1670,28 @@ void ThemDau_DIEM(PTRDIEM &listDIEM ,DIEM diem){
 //	return dem;
 //}
 //*******Xoa tat ca diem co ma sinh vien va ma mon hoc**************////////////
-//int Xoa_ALL_DIEM_MH(PTRDIEM &listDIEM ,char *MASV,char *MAMH){
+int Xoa_ALL_DIEM_MH(list_LOP &listLOP ,char *MASV,char *mamh){
+	int dem=0;
+	PTRDIEM r,q;
+	for(int i=0;i<listLOP.n;i++)
+	   {
+	   		int j = 0;
+	   		for (PTRSV p = listLOP.lop[i]->contro; p !=NULL; ) {
+	   			q =p->sv.contro;
+	   			if (strcmp(p->sv.MASV, MASV)==0 && (strcmp(q->diem.MAMH, mamh)==0) ){
+	   				while(q->next !=NULL) {
+	   					r =q->next;
+						q-> next = r->next;
+						delete r;
+						dem++;	
+					   }
+				   }
+			   		p= p->next;
+			   		j++;
+	   			}
+		}
 //	PTRDIEM p,q; int dem=0;
-//	while(listDIEM!=NULL&&(listDIEM->diem.MASV,MASV)==0&&strcmp(listDIEM->diem.MAMH,MAMH)==0)
+//	while(listDIEM!=NULL&&(listDIEM->diem.,MASV)==0&&strcmp(listDIEM->diem.MAMH,MAMH)==0)
 //	{
 //		p=listDIEM ; 
 //		listDIEM=listDIEM->next;
@@ -1696,7 +1715,7 @@ void ThemDau_DIEM(PTRDIEM &listDIEM ,DIEM diem){
 //		}
 //	}
 //	return dem;
-//}
+}
 //*******Xoa tat ca diem co ma sinh vien**************////////////
 int Xoa_MH_DIEM(PTRDIEM listDIEM ,char *MAMH){
 	PTRDIEM p,q; int dem=0;
@@ -3671,13 +3690,13 @@ XUATDS:
 				ThongBao((char *)"Ma SV khong ton tai !!",16,28,25,38);
 	        	goto NHAPMASV;
 	        }
-//	        if(Xoa_ALL_DIEM_MH(listDIEM,masv,mamh)!=0){
-//	        	ThongBao((char *)"Xoa Diem Thanh Cong !!",16,28,25,38);
-//	        	goto LAYDIEM;
-//	        }else{
-//	        	ThongBao((char *)"Sinh Vien Khong Co Diem Mon Nay !!",16,28,25,38);
-//	        	goto XUATDS;
-//	        }
+	        if(Xoa_ALL_DIEM_MH(listLOP,masv,mamh)!=0){
+	        	ThongBao((char *)"Xoa Diem Thanh Cong !!",16,28,25,38);
+	        	goto LAYDIEM;
+	        }else{
+	        	ThongBao((char *)"Sinh Vien Khong Co Diem Mon Nay !!",16,28,25,38);
+	        	goto XUATDS;
+	        }
 		    break;    
 			
 		case KEY_ESC:
@@ -3784,7 +3803,7 @@ NHAPMALOP:
 	int tcmonhoc[tongMH];
 	float diemMH[sluongSV];
 	int tongsotc[sluongSV];
-	Sapxep_SV(listLOP,vitri);
+//	Sapxep_SV(listLOP,vitri);
 	int reset=0;
 	for(PTRSV p=listLOP.lop[vitri]->contro;p!=NULL;p=p->next)
 	{
@@ -3810,31 +3829,39 @@ NHAPMALOP:
 	
 	for(int i = 0; i < listLOP.n ; i++)
 		{
-		  	for (PTRDIEM p = listLOP.lop[i]->contro->sv.contro; p !=NULL;p=p->next) {
-		  		char diem[4];
-				vitriMH =SearchMaMH(listMH, p->diem.MAMH,tongMH);
-				if(vitriMH !=-1)
-				{		
-					tcmonhoc[vitriMH] = (listMH[vitriMH].STCLT+listMH[vitriMH].STCTH);
-					if((p->diem.DIEMSV) >= atof(TongKetDiem[vitriMH][i]))
-					{
-					  if(p->diem.DIEMSV==10)
-					  {
-					  	 snprintf(diem, sizeof(diem), "%d", (int)(p->diem.DIEMSV));
-					  }
-					  else
-					  {
-					     snprintf(diem, sizeof(diem), "%0.2f", p->diem.DIEMSV);
-				      }
-					  strcpy(TongKetDiem[vitriMH][i],diem);
-					  break;
-				    }
-		  		}
-			  }		
+			int j = 0;
+			for (PTRSV q = listLOP.lop[i]->contro; q !=NULL;) {
+			  	for (PTRDIEM p = q->sv.contro; p !=NULL;p=p->next) {
+			  		char diem[4];
+			  		diem[0] = '\0';
+					vitriMH =SearchMaMH(listMH, p->diem.MAMH,tongMH);
+					if(vitriMH !=-1)
+					{		
+						tcmonhoc[vitriMH] = (listMH[vitriMH].STCLT+listMH[vitriMH].STCTH);
+						if((p->diem.DIEMSV) >= atof(TongKetDiem[vitriMH][j]))
+						{
+						  if(p->diem.DIEMSV==10)
+						  {
+						  	 snprintf(diem, sizeof(diem), "%d", (int)(p->diem.DIEMSV));
+						  }
+						  else
+						  {
+						     snprintf(diem, sizeof(diem), "%0.2f", p->diem.DIEMSV);
+					      }
+					      strncpy(TongKetDiem[vitriMH][j], diem, 4);
+//						  strcat(TongKetDiem[vitriMH][j],diem);
+//					      TongKetDiem[vitriMH][j][4] = '\0';
+					    }
+			  		}
+				  }
+				  q = q->next;
+				   j++;
+			}
 		}
 //	}
 	for(int i= 0 ; i < soluong ; i++)
 	 {
+	 	tongsotc[i]=0;
 	 	for (int j = 0; j < tongMH; j ++)
 		{
 		   if (TongKetDiem[j][i][0] != '\0')
@@ -3905,7 +3932,8 @@ XUATDS :
 		   if (vitriMH < tongMH&&TongKetDiem[vitriMH][i][0] != '\0')
 			{
 				gotoxy (48 + j * 11 , 10 + dong) ;
-				cout<<TongKetDiem[ vitriMH ][i];
+				float fr=atof(TongKetDiem[ vitriMH ][i]);
+			  	printf("%0.1f",fr);
 			}
 			vitriMH++;
 		}
@@ -3922,7 +3950,8 @@ XUATDS :
 	   	 	gotoxy ( x+2 , (y+2) +dong) ;
 	   	 	char diemtb[4];
 			snprintf(diemtb, sizeof(diemtb), "%0.2f", (diemMH[i])/(tongsotc[i]));
-		    cout<<diemtb;
+			float fr=atof(diemtb);
+			  	printf("%0.1f",fr);
 	   	 }
 	 	 dong++;
 	   }
